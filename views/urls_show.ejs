@@ -2,9 +2,17 @@
 <html lang="en">
 <head>
   <title>TinyApp</title>
+  <style>
+    p {
+      width: 50%;
+      margin: 0 auto;
+      font: 30px monospace;
+    }
+  </style>
 </head>
 <body>
   <% include partials/_header %>
-  <p><%= shortURL %></p>
+  <% include partials/_nav %>
+  <p>Your new short URL is /u/<%= shortURL %></p>
 </body>
 </html>
