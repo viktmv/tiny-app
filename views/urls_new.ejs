@@ -2,14 +2,36 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <style>* {
+        margin: 0;
+        padding: 0;
+      }
+      p {
+        width: 50%;
+        margin: 0 auto;
+        font: 30px monospace;
+      }
+      form {
+        max-width: 60%;
+        margin: 25px auto;
+        font-size: 20px;
+      }
+      form button {
+        width: 150px;
+        border: 1px solid #000;
+        cursor: pointer;
+        height: 20px;
+        /*font-weight: bold;*/
+      }
+    </style>
   </head>
   <body style="font-size:20px;">
     <% include partials/_header %>
     <% include partials/_nav %>
-    <form action="/urls" method="POST" style="margin:150px;">
+    <form action="/urls" method="POST">
       <label for="longURL">Enter a URL:</label>
       <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px">
-      <input type="submit" value="Submit">
+      <button>Submit</button>
     </form>
   </body>
 </html>

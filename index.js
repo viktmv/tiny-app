@@ -28,13 +28,18 @@ app.get('/urls', (req,res) => {
 app.post('/urls', (req, res) => {
   let shortURL = generateRandomString()
   urlDatabase[shortURL] = req.body.longURL
-  console.log(req.body.longURL)
   res.redirect(`http://localhost:8080/urls/${shortURL}`)
 })
 
 app.post('/urls/:id/delete', (req, res) => {
   console.log(req.params.id + 'deleted')
   delete urlDatabase[req.params.id]
+  res.redirect('/urls')
+})
+
+app.post('/urls/:id/update', (req, res) => {
+  console.log(req.params.id + ' updated')
+  urlDatabase[req.params.id] = req.body.longURL
   res.redirect('/urls')
 })
 

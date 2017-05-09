@@ -3,10 +3,30 @@
 <head>
   <title>TinyApp</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
     p {
       width: 50%;
       margin: 0 auto;
       font: 30px monospace;
+    }
+    form {
+      text-align: center;
+      max-width: 50%;
+      margin: 25px auto;
+      font-size: 20px;
+    }
+    form button {
+      width: 150px;
+      border: 1px solid #000;
+      cursor: pointer;
+      height: 20px;
+      /*font-weight: bold;*/
+    }
+    form input {
+      /*height: 25px;*/
     }
   </style>
 </head>
@@ -14,5 +34,9 @@
   <% include partials/_header %>
   <% include partials/_nav %>
   <p>Your new short URL is /u/<%= shortURL %></p>
+  <form action="/urls/<%=shortURL%>/update" method="POST">
+    <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px">
+    <button>Update your URL</button>
+  </form>
 </body>
 </html>

@@ -28,11 +28,13 @@
       border-bottom: 1px solid #000;
       border-radius: 0 0 25px 0;
     }
-    ul {
-      max-width: 40%;
+    .data-display {
+      max-width: 50%;
       margin: 0 auto;
     }
     .url-item {
+      font-size: 15px;
+      line-height: 25px;
       display: flex;
       justify-content: space-between;
       margin-top: 10px;
@@ -56,12 +58,15 @@
 <body>
   <% include partials/_header %>
   <% include partials/_nav %>
-  <ul>
+  <ul class="data-display">
     <% for (let url of Object.keys(urls)) { %>
       <li class="url-item"><%= url %> - <%= urls[url] %>
-        <form method="POST" action="/urls/<%=url%>/delete">
+        <div class="controls">
+          <a class="edit" href="/urls/<%=url%>">Edit</a>
+          <form method="POST" action="/urls/<%=url%>/delete">
           <button>Delete</button>
-        </form>
+          </form>
+        </div>
     <% } %>
   </ul>
 
