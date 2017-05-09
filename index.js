@@ -13,10 +13,12 @@ let urlDatabase = {
   "9sm5xK": "http://www.google.com"
 }
 
+// ---> INDEX
 app.get('/', (req, res) => {
   res.end('Welcome!\n')
 })
 
+// --> /urls
 app.get('/urls', (req,res) => {
   res.render('urls_index', { urls: urlDatabase })
 })
@@ -27,6 +29,13 @@ app.post('/urls', (req, res) => {
   res.redirect(`http://localhost:8080/urls/${shortURL}`)
 })
 
+app.post('/urls/:id/delete', (req, res) => {
+  console.log(req.params.id + 'deleted')
+  delete urlDatabase[req.params.id]
+  res.redirect('/urls')
+})
+
+// --> /urls/...
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 })
@@ -35,6 +44,7 @@ app.get('/urls/:id', (req, res) => {
   res.render('urls_show', { shortURL: req.params.id })
 })
 
+// --> /u/... <--- Redirection to long URLs
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL]
   res.redirect(longURL);

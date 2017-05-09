@@ -2,13 +2,30 @@
 <html lang="en">
 <head>
   <title>TinyApp</title>
+  <style>
+    ul {
+      max-width: 40%;
+    }
+    .url-item {
+      display: flex;
+      justify-content: space-between;
+    }
+    .url-item form {
+      display: inline-block;
+      margin-left: 50px;
+    }
+  </style>
 </head>
 <body>
   <% include partials/_header %>
   <ul>
     <% for (let url of Object.keys(urls)) { %>
-      <li><%= url %> - <%= urls[url] %>
+      <li class="url-item"><%= url %> - <%= urls[url] %>
+        <form method="POST" action="/urls/<%=url%>/delete">
+          <button>Delete</button>
+        </form>
     <% } %>
   </ul>
+
 </body>
 </html>
