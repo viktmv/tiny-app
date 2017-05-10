@@ -14,7 +14,9 @@
 html {
   font-family: monospace;
 }
-/* HEADER */
+body {
+  min-width: 600px;
+}
 header {
   width: 135px;
   padding: 4px;
@@ -24,23 +26,34 @@ header {
   border-bottom: 1px solid #000;
   border-radius: 0 0 25px 0;
 }
- /* NAV */
 nav {
-  position: absolute;
+  position: fixed;
   top: 0;
-  width: 100px;
   right: 0;
+  padding:0 5px 5px 15px;
+  border-left: 1px solid #000;
+  border-bottom: 1px solid #000;
+  border-radius: 0 0 0 25px;
   font-size: 20px;
 }
 nav li {
-  margin-top: 25px;
+  margin-top: 5px;
+  margin-right: 15px;
+  text-align: center;
+  display: inline-block;
 }
-/* OTHER */
-ul {
-  max-width: 40%;
+
+nav a {
+  text-decoration: none;
+}
+.data-display {
+  max-width: 50%;
+  min-width: 500px;
   margin: 0 auto;
 }
 .url-item {
+  font-size: 15px;
+  line-height: 25px;
   display: flex;
   justify-content: space-between;
   margin-top: 10px;

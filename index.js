@@ -10,7 +10,7 @@ let urlDB = {
 // Initial app settings
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({extended: true}))
-app.use(express.static(__dirname + '/views'))
+app.use(express.static(__dirname + '/public'))
 
 // ---> INDEX page
 app.get('/', (req, res) => {
@@ -53,7 +53,7 @@ app.get('/urls/:id', (req, res) => {
   res.render('urls_show', { shortURL: req.params.id })
 })
 
-// --> Redirection to long URLs 
+// --> Redirection to long URLs
 app.get('/u/:shortURL', (req, res) => {
   let longURL = urlDB[req.params.shortURL]
   res.redirect(longURL)
