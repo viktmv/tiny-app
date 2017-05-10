@@ -7,17 +7,18 @@
 <body>
   <% include partials/_header %>
   <% include partials/_nav %>
-  <ul class="data-display">
-    <% for (let url of Object.keys(urls)) { %>
-      <li class="url-item"><%= url %> - <%= urls[url] %>
-        <div class="controls">
-          <a class="edit" href="/urls/<%=url%>">Edit</a>
-          <form method="POST" action="/urls/<%=url%>/delete">
-          <button>Delete</button>
-          </form>
-        </div>
-    <% } %>
-  </ul>
-
+  <main class="data-display">
+    <ul>
+      <% for (let url of Object.keys(urls)) { %>
+        <li class="url-item"><%= url %> - <%= urls[url] %>
+          <div class="controls">
+            <a class="edit" href="/urls/<%=url%>">Edit</a>
+            <form method="POST" action="/urls/<%=url%>/delete">
+            <button>Delete</button>
+            </form>
+          </div>
+      <% } %>
+    </ul>
+  </main>
 </body>
 </html>

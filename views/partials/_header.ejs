@@ -1,14 +1,16 @@
 <header>
   <h1>Tiny-App</h1>
-  <% if(!username){ %>
-  <form class="login" action="/login" method="POST">
-    <input name="username" placeholder="username"><br>
-    <button>Login</button>
-  </form>
-  <% } else{ %>
-  <h2>User: <%= username %></h2>
-  <form class="logout" action="/logout" method="POST">
-    <button>Logout</button>
-  </form>
- <% } %>
+  <aside>
+    <% if(!username){ %>
+      <form class="login" action="/login" method="POST">
+        <input name="username" placeholder="enter username"><br>
+        <button>Login</button>
+      </form>
+    <% } else{ %>
+      <h2>User: <%= username %></h2>
+      <form class="logout" action="/logout" method="POST">
+        <button>Logout</button>
+      </form>
+    <% } %>
+  </aside>
 </header>
