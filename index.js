@@ -2,18 +2,15 @@ const express = require('express')
 const app = express()
 const bodyParser = require("body-parser");
 
-
 let PORT  = process.env.PORT || 8080
-
-app.set("view engine", "ejs");
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(express.static(__dirname + '/views'))
-
-let urlDatabase = {
+let urlDB = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 }
 
+app.set("view engine", "ejs");
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(express.static(__dirname + '/views'))
 
 // ---> INDEX
 app.get('/', (req, res) => {
@@ -22,24 +19,24 @@ app.get('/', (req, res) => {
 
 // --> /urls
 app.get('/urls', (req,res) => {
-  res.render('urls_index', { urls: urlDatabase })
+  res.render('urls_index', { urls: urlDB })
 })
 
 app.post('/urls', (req, res) => {
   let shortURL = generateRandomString()
-  urlDatabase[shortURL] = req.body.longURL
+  urlDB[shortURL] = req.body.longURL
   res.redirect(`http://localhost:8080/urls/${shortURL}`)
 })
 
 app.post('/urls/:id/delete', (req, res) => {
   console.log(req.params.id + 'deleted')
-  delete urlDatabase[req.params.id]
+  delete urlDB[req.params.id]
   res.redirect('/urls')
 })
 
 app.post('/urls/:id/update', (req, res) => {
   console.log(req.params.id + ' updated')
-  urlDatabase[req.params.id] = req.body.longURL
+  urlDB[req.params.id] = req.body.longURL
   res.redirect('/urls')
 })
 
@@ -54,7 +51,7 @@ app.get('/urls/:id', (req, res) => {
 
 // --> /u/... <--- Redirection to long URLs
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL]
+  let longURL = urlDB[req.params.shortURL]
   res.redirect(longURL);
 })
 
