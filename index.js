@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
 
 let PORT  = process.env.PORT || 8080
 let urlDB = {
@@ -11,6 +12,7 @@ let urlDB = {
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(express.static(__dirname + '/public'))
+app.use(cookieParser())
 
 // ---> INDEX page
 app.get('/', (req, res) => {
@@ -19,7 +21,20 @@ app.get('/', (req, res) => {
 
 // --> /urls
 app.get('/urls', (req,res) => {
-  res.render('urls_index', { urls: urlDB })
+  res.render('urls_index', { urls: urlDB, username: req.cookies["username"] })
+})
+
+// --> login
+app.post('/login', (req, res) => {
+  res.cookie('username', req.body.username,
+    { expires: new Date(Date.now() + 900000 )}
+  )
+  res.redirect(`http://localhost:8080/urls`)
+})
+
+app.post('/logout', (req, res) => {
+  res.clearCookie('username')
+  res.redirect(`http://localhost:8080/urls`)
 })
 
 // --> Add new address in DB
@@ -45,12 +60,12 @@ app.post('/urls/:id/update', (req, res) => {
 
 // --> Render page to add new address
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new')
+  res.render('urls_new', { username: req.cookies["username"] })
 })
 
 // --> Render the update page
 app.get('/urls/:id', (req, res) => {
-  res.render('urls_show', { shortURL: req.params.id })
+  res.render('urls_show', { shortURL: req.params.id, username: req.cookies["username"] })
 })
 
 // --> Redirection to long URLs
