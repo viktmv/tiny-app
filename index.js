@@ -10,8 +10,8 @@ let PORT  = process.env.PORT || 8080
 
 let urlDB = {
   'user3RandomID': {
-    'b2xVn2': 'http://www.lighthouselabs.ca',
-    '9sm5xK': 'http://www.google.com'
+    'b2xVn2': ['http://www.lighthouselabs.ca', 0],
+    '9sm5xK': ['http://www.google.com', 0]
   }
 }
 let usersDB = {
@@ -119,7 +119,7 @@ app.post('/urls', (req, res) => {
   if (!user) return res.status(301).redirect('/login')
 
   let shortURL = generateRandomString()
-  urlDB[user.id][shortURL] = req.body.longURL
+  urlDB[user.id][shortURL] = [req.body.longURL, 0]
   res.status(301).redirect(`http://localhost:8080/urls/${shortURL}`)
 })
 
@@ -142,7 +142,7 @@ app.put('/urls/:id/update', (req, res) => {
   if (!urlDB[id]) return res.sendStatus(403)
   if (!urlDB[id][req.params.id]) return res.sendStatus(404)
   console.log(req.params.id, 'updated')
-  urlDB[id][req.params.id] = req.body.longURL
+  urlDB[id][req.params.id] = [req.body.longURL, 0]
   res.status(301).redirect('/urls')
 })
 
@@ -177,7 +177,7 @@ app.get('/u/:shortURL', (req, res) => {
   let longURL
   for (let user of Object.keys(urlDB)) {
     if (urlDB[user].hasOwnProperty(req.params.shortURL))
-      longURL = urlDB[user][req.params.shortURL]
+      longURL = urlDB[user][req.params.shortURL][0]
   }
 
   res.status(301).redirect(longURL)
