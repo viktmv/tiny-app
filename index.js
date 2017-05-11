@@ -13,22 +13,22 @@ let urlDB = {
   }
 }
 let usersDB = {
-    "userRandomID": {
-      id: "userRandomID",
-      email: "user@example.com",
-      password: "purple-monkey-dinosaur"
-    },
-    "user2RandomID": {
-        id: "user2RandomID",
-        email: "user2@example.com",
-        password: "dishwasher-funk"
-    },
-    'user3RandomID' : {
-        id: "user3RandomID",
-        email: "user3@example.com",
-        password: "funk"
-    }
+  'userRandomID': {
+    id: 'userRandomID',
+    email: 'user@example.com',
+    password: 'purple-monkey-dinosaur'
+  },
+  'user2RandomID': {
+    id: 'user2RandomID',
+    email: 'user2@example.com',
+    password: 'dishwasher-funk'
+  },
+  'user3RandomID' : {
+    id: 'user3RandomID',
+    email: 'user3@example.com',
+    password: 'funk'
   }
+}
 
 // Initial app settings
 app.set('view engine', 'ejs')
@@ -39,12 +39,12 @@ app.use(cookieSession({
   keys: ['key1', 'key2']
 }))
 
-// ---> INDEX page
+// ---> INDEX page render
 app.get('/', (req, res) => {
   res.end('Welcome!\n')
 })
 
-// --> /urls
+// --> /urls page render
 app.get('/urls', (req,res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
@@ -55,7 +55,7 @@ app.get('/urls', (req,res) => {
   res.render('urls_index', templateVars)
 })
 
-// --> register page
+// --> register page render
 app.get('/register', (req,res) => {
   let user = loggedUser(req)
   let templateVars = {
@@ -65,7 +65,7 @@ app.get('/register', (req,res) => {
   res.render('urls_register', templateVars)
 })
 
-// --> handle register req
+// --> handle user registration
 app.post('/register', (req,res) => {
   if (getUserID(req, usersDB)) return res.sendStatus(400)
 
@@ -76,46 +76,41 @@ app.post('/register', (req,res) => {
     id: user_id,
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 10)
-    }
+  }
   req.session.user_id = { user_id }
   res.status(301).redirect('/urls')
 })
 
-// --> login
+// --> handle user login
 app.post('/login', (req, res) => {
   let user = getUserID(req, usersDB)
-  let id = user ? user.id : ''
 
   if (!user) return res.status(403).end('No user found')
 
   if (!bcrypt.compareSync(req.body.password, usersDB[user].password)) return res.status(403).end('password does not match')
 
-  let templateVars = {
-    urls: urlDB,
-    user: usersDB[user].id
-  }
   req.session.user_id =  { user_id: usersDB[user].id }
   res.status(301).redirect('/urls')
 })
 
-// --> login page
+// --> login page render
 app.get('/login', (req, res) => {
   let user = loggedUser(req)
   let templateVars = {
     urls: urlDB,
     user
   }
-  res.render(`urls_login`, templateVars)
+  res.render('urls_login', templateVars)
 })
 
-// --> logout
+// --> handle user logout
 app.post('/logout', (req, res) => {
   req.session = null
   res.clearCookie('user_id')
-  res.status(301).redirect(`http://localhost:8080/urls`)
+  res.status(301).redirect('http://localhost:8080/urls')
 })
 
-// --> Add new address in DB
+// --> Add new address to DB
 app.post('/urls', (req, res) => {
   let user = loggedUser(req)
   if (!user) return res.status(301).redirect('/login')
@@ -176,7 +171,7 @@ app.get('/urls/:id', (req, res) => {
 
 // --> Redirection to long URLs
 app.get('/u/:shortURL', (req, res) => {
-  let longURL;
+  let longURL
   for (let user of Object.keys(urlDB)) {
     if (urlDB[user].hasOwnProperty(req.params.shortURL))
       longURL = urlDB[user][req.params.shortURL]
@@ -187,28 +182,24 @@ app.get('/u/:shortURL', (req, res) => {
 
 app.listen(PORT, () => console.log(`App listening on port ${PORT}`))
 
+
+// Helper functions
 function generateRandomString() {
   return Math.random().toString(36).substring(2, 8)
 }
 
-function emailInDB(req, DB) {
-  let inDB = false
-  for (let key of Object.keys(DB)) {
-    if(DB[key].email == req.body.email)
-      inDB = true
-  }
-  return inDB
-}
 
 function getUserID(req, DB) {
   let userID = ''
-  for (let key of Object.keys(usersDB)) {
-    if(usersDB[key].email == req.body.email)
-      userID = usersDB[key].id
+  for (let key of Object.keys(DB)) {
+    if(DB[key].email == req.body.email)
+      userID = DB[key].id
   }
   return userID
 }
 
 function loggedUser(req) {
-  return req.session['user_id'] ? usersDB[req.session["user_id"].user_id] : ''
+  return req.session['user_id']
+        ? usersDB[req.session['user_id'].user_id]
+        : ''
 }
