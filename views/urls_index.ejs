@@ -2,21 +2,23 @@
 <html lang="en">
 <head>
   <title>TinyApp</title>
-  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" type="text/css" href="../style.css">
 </head>
 <body>
   <% include partials/_header %>
   <% include partials/_nav %>
   <main class="data-display">
     <ul>
-      <% for (let url of Object.keys(urls)) { %>
-        <li class="url-item"><%= url %> - <%= urls[url] %>
-          <div class="controls">
-            <a class="edit" href="/urls/<%=url%>">Edit</a>
-            <form method="POST" action="/urls/<%=url%>/delete">
-            <button>Delete</button>
-            </form>
-          </div>
+      <% if (urls) { %>
+        <% for (let url of Object.keys(urls)) { %>
+          <li class="url-item"><%= url %> - <%= urls[url] %>
+            <div class="controls">
+              <a class="edit" href="/urls/<%=url%>">Edit</a>
+              <form method="POST" action="/urls/<%=url%>/delete">
+              <button>Delete</button>
+              </form>
+            </div>
+        <% } %>
       <% } %>
     </ul>
   </main>

@@ -4,9 +4,12 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 
 let PORT  = process.env.PORT || 8080
+
 let urlDB = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+  'testUser': {
+    'b2xVn2': 'http://www.lighthouselabs.ca',
+    '9sm5xK': 'http://www.google.com'
+  }
 }
 let usersDB = {
     "userRandomID": {
@@ -34,9 +37,11 @@ app.get('/', (req, res) => {
 
 // --> /urls
 app.get('/urls', (req,res) => {
-  let user = req.cookies['user_id'] ? usersDB[req.cookies["user_id"].user_id] : ''
+  let user = loggedUser(req)
+  let id = user ? user.id : ''
+
   let templateVars = {
-    urls: urlDB,
+    urls: urlDB[id],
     user: user
   }
   res.render('urls_index', templateVars)
@@ -44,7 +49,8 @@ app.get('/urls', (req,res) => {
 
 // --> register page
 app.get('/register', (req,res) => {
-  let user = req.cookies['user_id'] ? usersDB[req.cookies["user_id"].user_id] : ''
+  let user = loggedUser(req)
+  // if (!urlDB[user]) return res.sendStatus(403)
   let templateVars = {
     urls: urlDB,
     user
@@ -54,14 +60,11 @@ app.get('/register', (req,res) => {
 
 // --> handle register req
 app.post('/register', (req,res) => {
-  let inDB = false
-  for (let key of Object.keys(usersDB)) {
-    if(usersDB[key].email == req.body.email)
-      inDB = true
-  }
-  if (inDB) return res.status(400).end('Reponded with 400')
+  if (getUserID(req, usersDB)) return res.status(400).end('Reponded with 400')
 
   let user_id = generateRandomString()
+  urlDB[user_id] = {}
+
   usersDB[user_id] = {
     id: user_id,
     email: req.body.email,
@@ -73,26 +76,23 @@ app.post('/register', (req,res) => {
 
 // --> login
 app.post('/login', (req, res) => {
-  let userID = ''
-  for (let key of Object.keys(usersDB)) {
-    if(usersDB[key].email == req.body.email)
-      userID = usersDB[key].id
-  }
-  if (!userID) return res.status(403).end('No user found')
+  let user = getUserID(req, usersDB)
 
-  if (!(usersDB[userID].password == req.body.password)) return res.status(403).end('password does not match')
+  if (!user) return res.status(403).end('No user found')
+
+  if (!(usersDB[user].password == req.body.password)) return res.status(403).end('password does not match')
 
   let templateVars = {
     urls: urlDB,
-    user: usersDB[userID].id
+    user: usersDB[user].id
   }
-  res.cookie('user_id', { user_id: usersDB[userID].id })
+  res.cookie('user_id', { user_id: usersDB[user].id })
   res.status(301).redirect('/urls')
 })
 
 // --> login page
 app.get('/login', (req, res) => {
-  let user = req.cookies['user_id'] ? usersDB[req.cookies["user_id"].user_id] : ''
+  let user = loggedUser(req)
   let templateVars = {
     urls: urlDB,
     user
@@ -108,31 +108,44 @@ app.post('/logout', (req, res) => {
 
 // --> Add new address in DB
 app.post('/urls', (req, res) => {
+  let user = loggedUser(req)
+  if (!user) return res.status(301).redirect('/login')
+
   let shortURL = generateRandomString()
-  urlDB[shortURL] = req.body.longURL
+  urlDB[user.id][shortURL] = req.body.longURL
   res.status(301).redirect(`http://localhost:8080/urls/${shortURL}`)
 })
 
 // --> Delete address from DB
 app.post('/urls/:id/delete', (req, res) => {
+  let user = loggedUser(req)
+  let id = user ? user.id : ''
+  if (!urlDB[id]) return res.sendStatus(403)
+
   console.log(req.params.id + 'deleted')
-  delete urlDB[req.params.id]
+  delete urlDB[id][req.params.id]
   res.status(301).redirect('/urls')
 })
 
 // --> Update address in DB
 app.post('/urls/:id/update', (req, res) => {
+  let user = loggedUser(req)
+  let id = user ? user.id : ''
+
+  if (!urlDB[id]) return res.sendStatus(403)
   console.log(req.params.id + ' updated')
-  urlDB[req.params.id] = req.body.longURL
+  urlDB[id][req.params.id] = req.body.longURL
   res.status(301).redirect('/urls')
 })
 
 // --> Render page to add new address
 app.get('/urls/new', (req, res) => {
-  let user = req.cookies['user_id'] ? usersDB[req.cookies["user_id"].user_id] : ''
+  let user = loggedUser(req)
+  let id = user ? user.id : ''
+
   if (!user) return res.status(301).redirect('/login')
   let templateVars = {
-    urls: urlDB,
+    urls: urlDB[id],
     user
   }
   res.render('urls_new', templateVars)
@@ -140,11 +153,16 @@ app.get('/urls/new', (req, res) => {
 
 // --> Render the update page
 app.get('/urls/:id', (req, res) => {
-  let user = req.cookies['user_id'] ? usersDB[req.cookies["user_id"].user_id] : ''
+  let user = loggedUser(req)
+  let id = user ? user.id : ''
   let templateVars = {
     user,
     shortURL: req.params.id
   }
+  console.log(urlDB)
+  console.log(user)
+  if (!urlDB[id]) return res.sendStatus(403)
+  if (!user) return res.status(301).redirect('/login')
   res.render('urls_show', templateVars)
 })
 
@@ -158,4 +176,26 @@ app.listen(PORT, () => console.log(`App listening on port ${PORT}`))
 
 function generateRandomString() {
   return Math.random().toString(36).substring(2, 8)
+}
+
+function emailInDB(req, DB) {
+  let inDB = false
+  for (let key of Object.keys(DB)) {
+    if(DB[key].email == req.body.email)
+      inDB = true
+  }
+  return inDB
+}
+
+function getUserID(req, DB) {
+  let userID = ''
+  for (let key of Object.keys(usersDB)) {
+    if(usersDB[key].email == req.body.email)
+      userID = usersDB[key].id
+  }
+  return userID
+}
+
+function loggedUser(req) {
+  return req.cookies['user_id'] ? usersDB[req.cookies["user_id"].user_id] : ''
 }
