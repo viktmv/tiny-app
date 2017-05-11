@@ -1,8 +1,8 @@
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
-const cookieParser = require('cookie-parser')
 const bcrypt = require('bcrypt')
+const cookieSession = require('cookie-session')
 
 let PORT  = process.env.PORT || 8080
 
@@ -34,7 +34,10 @@ let usersDB = {
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(express.static(__dirname + '/public'))
-app.use(cookieParser())
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}))
 
 // ---> INDEX page
 app.get('/', (req, res) => {
@@ -49,7 +52,6 @@ app.get('/urls', (req,res) => {
     urls: urlDB[id],
     user: user
   }
-  console.log(usersDB)
   res.render('urls_index', templateVars)
 })
 
@@ -75,7 +77,7 @@ app.post('/register', (req,res) => {
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 10)
     }
-  res.cookie('user_id', { user_id })
+  req.session.user_id = { user_id }
   res.status(301).redirect('/urls')
 })
 
@@ -92,7 +94,7 @@ app.post('/login', (req, res) => {
     urls: urlDB,
     user: usersDB[user].id
   }
-  res.cookie('user_id', { user_id: usersDB[user].id })
+  req.session.user_id =  { user_id: usersDB[user].id }
   res.status(301).redirect('/urls')
 })
 
@@ -108,6 +110,7 @@ app.get('/login', (req, res) => {
 
 // --> logout
 app.post('/logout', (req, res) => {
+  req.session = null
   res.clearCookie('user_id')
   res.status(301).redirect(`http://localhost:8080/urls`)
 })
@@ -166,8 +169,8 @@ app.get('/urls/:id', (req, res) => {
     user,
     shortURL: req.params.id
   }
-  if (!urlDB[id]) return res.sendStatus(403)
   if (!user) return res.status(301).redirect('/login')
+  if (!urlDB[id][req.params.id]) return res.sendStatus(403)
   res.render('urls_show', templateVars)
 })
 
@@ -207,5 +210,5 @@ function getUserID(req, DB) {
 }
 
 function loggedUser(req) {
-  return req.cookies['user_id'] ? usersDB[req.cookies["user_id"].user_id] : ''
+  return req.session['user_id'] ? usersDB[req.session["user_id"].user_id] : ''
 }
