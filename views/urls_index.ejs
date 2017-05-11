@@ -14,7 +14,7 @@
           <li class="url-item"><%= url %> - <%= urls[url] %>
             <div class="controls">
               <a class="edit" href="/urls/<%=url%>">Edit</a>
-              <form method="POST" action="/urls/<%=url%>/delete">
+              <form method="POST" action="/urls/<%=url%>/delete?_method=DELETE">
               <button>Delete</button>
               </form>
             </div>

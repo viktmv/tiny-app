@@ -31,7 +31,7 @@
   <% include partials/_header %>
   <% include partials/_nav %>
   <p>Your new short URL is /u/<%= shortURL %></p>
-  <form class="update" action="/urls/<%=shortURL%>/update" method="POST">
+  <form class="update" action="/urls/<%=shortURL%>/update?_method=PUT" method="POST">
     <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px">
     <button>Update your URL</button>
   </form>

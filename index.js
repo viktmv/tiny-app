@@ -1,8 +1,10 @@
-const express = require('express')
-const app = express()
-const bodyParser = require('body-parser')
 const bcrypt = require('bcrypt')
+const express = require('express')
+const bodyParser = require('body-parser')
 const cookieSession = require('cookie-session')
+const methodOverride = require('method-override')
+
+const app = express()
 
 let PORT  = process.env.PORT || 8080
 
@@ -32,12 +34,13 @@ let usersDB = {
 
 // Initial app settings
 app.set('view engine', 'ejs')
-app.use(bodyParser.urlencoded({extended: true}))
 app.use(express.static(__dirname + '/public'))
+app.use(bodyParser.urlencoded({extended: true}))
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
 }))
+app.use(methodOverride('_method'))
 
 // ---> INDEX page render
 app.get('/', (req, res) => {
@@ -121,7 +124,7 @@ app.post('/urls', (req, res) => {
 })
 
 // --> Delete address from DB
-app.post('/urls/:id/delete', (req, res) => {
+app.delete('/urls/:id/delete', (req, res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
   if (!urlDB[id]) return res.sendStatus(403)
@@ -132,7 +135,7 @@ app.post('/urls/:id/delete', (req, res) => {
 })
 
 // --> Update address in DB
-app.post('/urls/:id/update', (req, res) => {
+app.put('/urls/:id/update', (req, res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
 
@@ -182,12 +185,10 @@ app.get('/u/:shortURL', (req, res) => {
 
 app.listen(PORT, () => console.log(`App listening on port ${PORT}`))
 
-
 // Helper functions
 function generateRandomString() {
   return Math.random().toString(36).substring(2, 8)
 }
-
 
 function getUserID(req, DB) {
   let userID = ''
