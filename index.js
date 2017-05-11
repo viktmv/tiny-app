@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser')
 let PORT  = process.env.PORT || 8080
 
 let urlDB = {
-  'testUser': {
+  'user3RandomID': {
     'b2xVn2': 'http://www.lighthouselabs.ca',
     '9sm5xK': 'http://www.google.com'
   }
@@ -21,7 +21,12 @@ let usersDB = {
         id: "user2RandomID",
         email: "user2@example.com",
         password: "dishwasher-funk"
-      }
+    },
+    'user3RandomID' : {
+        id: "user3RandomID",
+        email: "user3@example.com",
+        password: "funk"
+    }
   }
 
 // Initial app settings
@@ -39,7 +44,6 @@ app.get('/', (req, res) => {
 app.get('/urls', (req,res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
-
   let templateVars = {
     urls: urlDB[id],
     user: user
@@ -50,7 +54,6 @@ app.get('/urls', (req,res) => {
 // --> register page
 app.get('/register', (req,res) => {
   let user = loggedUser(req)
-  // if (!urlDB[user]) return res.sendStatus(403)
   let templateVars = {
     urls: urlDB,
     user
@@ -60,7 +63,7 @@ app.get('/register', (req,res) => {
 
 // --> handle register req
 app.post('/register', (req,res) => {
-  if (getUserID(req, usersDB)) return res.status(400).end('Reponded with 400')
+  if (getUserID(req, usersDB)) return res.sendStatus(400)
 
   let user_id = generateRandomString()
   urlDB[user_id] = {}
@@ -77,6 +80,7 @@ app.post('/register', (req,res) => {
 // --> login
 app.post('/login', (req, res) => {
   let user = getUserID(req, usersDB)
+  let id = user ? user.id : ''
 
   if (!user) return res.status(403).end('No user found')
 
@@ -121,8 +125,8 @@ app.post('/urls/:id/delete', (req, res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
   if (!urlDB[id]) return res.sendStatus(403)
-
-  console.log(req.params.id + 'deleted')
+  if (!urlDB[id][req.params.id]) return res.sendStatus(404)
+  console.log(req.params.id, 'deleted')
   delete urlDB[id][req.params.id]
   res.status(301).redirect('/urls')
 })
@@ -133,7 +137,8 @@ app.post('/urls/:id/update', (req, res) => {
   let id = user ? user.id : ''
 
   if (!urlDB[id]) return res.sendStatus(403)
-  console.log(req.params.id + ' updated')
+  if (!urlDB[id][req.params.id]) return res.sendStatus(404)
+  console.log(req.params.id, 'updated')
   urlDB[id][req.params.id] = req.body.longURL
   res.status(301).redirect('/urls')
 })
@@ -159,8 +164,6 @@ app.get('/urls/:id', (req, res) => {
     user,
     shortURL: req.params.id
   }
-  console.log(urlDB)
-  console.log(user)
   if (!urlDB[id]) return res.sendStatus(403)
   if (!user) return res.status(301).redirect('/login')
   res.render('urls_show', templateVars)
@@ -168,7 +171,12 @@ app.get('/urls/:id', (req, res) => {
 
 // --> Redirection to long URLs
 app.get('/u/:shortURL', (req, res) => {
-  let longURL = urlDB[req.params.shortURL]
+  let longURL;
+  for (let user of Object.keys(urlDB)) {
+    if (urlDB[user].hasOwnProperty(req.params.shortURL))
+      longURL = urlDB[user][req.params.shortURL]
+  }
+
   res.status(301).redirect(longURL)
 })
 

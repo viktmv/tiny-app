@@ -10,17 +10,17 @@
       margin: 0 auto;
       font: 30px monospace;
     }
-    .login {
+    .auth {
       text-align: center;
       max-width: 50%;
       margin: 10px auto;
       font-size: 20px;
     }
-    .login input {
+    .auth input {
       width: 150px;
       margin-bottom: 10px;
     }
-    .login button {
+    .auth button {
       width: 150px;
       border: 1px solid #000;
       cursor: pointer;
@@ -31,11 +31,18 @@
 <body>
   <% include partials/_header %>
   <% include partials/_nav %>
-  <p>Log In</p>
-  <form class="login" action="/login" method="POST">
-    <input id="email" type="email" name="email" placeholder="example@mail.com" required style="width: 200px"><br>
-    <input id="password" type="password" name="password" placeholder="**********" required style="width: 200px"><br>
-    <button>Go ahead and do this</button>
-  </form>
+  <% if (!user) { %>
+    <p>Log In</p>
+    <form class="auth" action="/login" method="POST">
+      <input id="email" type="email" name="email" placeholder="example@mail.com" required style="width: 200px"><br>
+      <input id="password" type="password" name="password" placeholder="**********" required style="width: 200px"><br>
+      <button>Go ahead and do this</button>
+    </form>
+  <% } else { %>
+    <p>Log Out</p>
+    <form class="auth" action="/logout" method="POST">
+      <button>Leave this place</button>
+    </form>
+   <% } %>
 </body>
 </html>
