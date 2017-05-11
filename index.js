@@ -8,12 +8,31 @@ const app = express()
 
 let PORT  = process.env.PORT || 8080
 
+// let urlDB = {
+//   'user3RandomID': {
+//     'b2xVn2': ['http://www.lighthouselabs.ca', 0, 0],
+//     '9sm5xK': ['http://www.google.com', 0, 0]
+//   }
+// }
 let urlDB = {
   'user3RandomID': {
-    'b2xVn2': ['http://www.lighthouselabs.ca', 0, 0],
-    '9sm5xK': ['http://www.google.com', 0, 0]
+    'b2xVn2': {
+      url: 'http://www.lighthouselabs.ca',
+      totalVisits: 0,
+      uniqueVisits: 0,
+      visitors: {
+        // visitorID : timestamp
+      }
+    },
+    '9sm5xK': {
+      url: 'http://www.google.com',
+      totalVisits: 0,
+      uniqueVisits: 0,
+      visitors: {}
+    }
   }
 }
+
 let usersDB = {
   'userRandomID': {
     id: 'userRandomID',
@@ -121,7 +140,12 @@ app.post('/urls', (req, res) => {
   if (!user) return res.status(301).redirect('/login')
 
   let shortURL = generateRandomString()
-  urlDB[user.id][shortURL] = [req.body.longURL, 0, 0]
+  urlDB[user.id][shortURL] =  {
+    url: req.body.longURL,
+    totalVisits: 0,
+    uniqueVisits: 0,
+    visitors: {}
+  }
   res.status(301).redirect(`http://localhost:8080/urls/${shortURL}`)
 })
 
@@ -144,7 +168,12 @@ app.put('/urls/:id/update', (req, res) => {
   if (!urlDB[id]) return res.sendStatus(403)
   if (!urlDB[id][req.params.id]) return res.sendStatus(404)
   console.log(req.params.id, 'updated')
-  urlDB[id][req.params.id] = [req.body.longURL, 0]
+  urlDB[id][req.params.id] = {
+    url: req.body.longURL,
+    totalVisits: 0,
+    uniqueVisits: 0,
+    visitors: {}
+  }
   res.status(301).redirect('/urls')
 })
 
@@ -176,21 +205,24 @@ app.get('/urls/:id', (req, res) => {
 
 // --> Redirection to long URLs
 app.get('/u/:shortURL', (req, res) => {
-  let longURL
-  let user
+  let longURL, user, exist
   let {shortURL} = req.params
   for (let key of Object.keys(urlDB)) {
     if (urlDB[key].hasOwnProperty(shortURL)) {
+      exist = true
       user = key
-      longURL = urlDB[key][shortURL][0]
-      urlDB[key][shortURL][1]++
+      longURL = urlDB[key][shortURL].url
+      urlDB[key][shortURL].totalVisits++
     }
   }
+  if (!exist) return res.sendStatus(404)
   // Check for uniqueness of visitor and set up a cookie
   if (!req.session[shortURL]) {
-    urlDB[user][shortURL][2]++
+    urlDB[user][shortURL].uniqueVisits++
+    urlDB[user][shortURL].visitors[`${generateRandomString()}-id`] = new Date()
     req.session[shortURL] = true
   }
+  console.log(urlDB[user][shortURL])
   // Redirect
   res.status(301).redirect(longURL)
 })
