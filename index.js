@@ -10,8 +10,8 @@ let PORT  = process.env.PORT || 8080
 
 let urlDB = {
   'user3RandomID': {
-    'b2xVn2': ['http://www.lighthouselabs.ca', 0],
-    '9sm5xK': ['http://www.google.com', 0]
+    'b2xVn2': ['http://www.lighthouselabs.ca', 0, 0],
+    '9sm5xK': ['http://www.google.com', 0, 0]
   }
 }
 let usersDB = {
@@ -31,6 +31,8 @@ let usersDB = {
     password: 'funk'
   }
 }
+
+let uniqueVisitors = 0
 
 // Initial app settings
 app.set('view engine', 'ejs')
@@ -119,7 +121,7 @@ app.post('/urls', (req, res) => {
   if (!user) return res.status(301).redirect('/login')
 
   let shortURL = generateRandomString()
-  urlDB[user.id][shortURL] = [req.body.longURL, 0]
+  urlDB[user.id][shortURL] = [req.body.longURL, 0, 0]
   res.status(301).redirect(`http://localhost:8080/urls/${shortURL}`)
 })
 
@@ -175,13 +177,21 @@ app.get('/urls/:id', (req, res) => {
 // --> Redirection to long URLs
 app.get('/u/:shortURL', (req, res) => {
   let longURL
-  for (let user of Object.keys(urlDB)) {
-    if (urlDB[user].hasOwnProperty(req.params.shortURL)) {
-      longURL = urlDB[user][req.params.shortURL][0]
-      urlDB[user][req.params.shortURL][1]++
+  let user
+  let {shortURL} = req.params
+  for (let key of Object.keys(urlDB)) {
+    if (urlDB[key].hasOwnProperty(shortURL)) {
+      user = key
+      longURL = urlDB[key][shortURL][0]
+      urlDB[key][shortURL][1]++
     }
   }
-
+  // Check for uniqueness of visitor and set up a cookie
+  if (!req.session[shortURL]) {
+    urlDB[user][shortURL][2]++
+    req.session[shortURL] = true
+  }
+  // Redirect
   res.status(301).redirect(longURL)
 })
 

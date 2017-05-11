@@ -30,8 +30,9 @@
 <body>
   <% include partials/_header %>
   <% include partials/_nav %>
-  <p>Your short URL is /u/<%= url.short %><br>
-    It was visited <span><%= url.long[1] %></span> times
+  <p>Your short URL is <a href="localhost:8080/u/<%= url.short %>">localhost:8080/u/<%= url.short %></a><br>
+    It was visited <span><%= url.long[1] %></span> times<br>
+    Unique Visits: <span><%= url.long[2] %></span>
   </p>
   <form class="update" action="/urls/<%=url.short%>/update?_method=PUT" method="POST">
     <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px">
