@@ -130,6 +130,7 @@ app.post('/urls/:id/update', (req, res) => {
 // --> Render page to add new address
 app.get('/urls/new', (req, res) => {
   let user = req.cookies['user_id'] ? usersDB[req.cookies["user_id"].user_id] : ''
+  if (!user) return res.status(301).redirect('/login')
   let templateVars = {
     urls: urlDB,
     user
