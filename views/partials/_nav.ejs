@@ -5,6 +5,8 @@
       <li><a href="/urls/new">New</a>
     <% } %>
     <li><a href="/login">Log</a>
-    <li><a href="/register">Reg</a>
+    <% if (!user) {%>
+      <li><a href="/register">Reg</a>
+    <% } %>
   </ul>
 </nav>
