@@ -163,12 +163,12 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
-  let templateVars = {
-    user,
-    shortURL: req.params.id
-  }
   if (!user) return res.status(301).redirect('/login')
   if (!urlDB[id][req.params.id]) return res.sendStatus(403)
+  let templateVars = {
+    user,
+    url: { long: urlDB[id][req.params.id], short: req.params.id}
+  }
   res.render('urls_show', templateVars)
 })
 
@@ -176,8 +176,10 @@ app.get('/urls/:id', (req, res) => {
 app.get('/u/:shortURL', (req, res) => {
   let longURL
   for (let user of Object.keys(urlDB)) {
-    if (urlDB[user].hasOwnProperty(req.params.shortURL))
+    if (urlDB[user].hasOwnProperty(req.params.shortURL)) {
       longURL = urlDB[user][req.params.shortURL][0]
+      urlDB[user][req.params.shortURL][1]++
+    }
   }
 
   res.status(301).redirect(longURL)
