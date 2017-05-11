@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
+const bcrypt = require('bcrypt')
 
 let PORT  = process.env.PORT || 8080
 
@@ -48,6 +49,7 @@ app.get('/urls', (req,res) => {
     urls: urlDB[id],
     user: user
   }
+  console.log(usersDB)
   res.render('urls_index', templateVars)
 })
 
@@ -71,7 +73,7 @@ app.post('/register', (req,res) => {
   usersDB[user_id] = {
     id: user_id,
     email: req.body.email,
-    password: req.body.password
+    password: bcrypt.hashSync(req.body.password, 10)
     }
   res.cookie('user_id', { user_id })
   res.status(301).redirect('/urls')
@@ -84,7 +86,7 @@ app.post('/login', (req, res) => {
 
   if (!user) return res.status(403).end('No user found')
 
-  if (!(usersDB[user].password == req.body.password)) return res.status(403).end('password does not match')
+  if (!bcrypt.compareSync(req.body.password, usersDB[user].password)) return res.status(403).end('password does not match')
 
   let templateVars = {
     urls: urlDB,
