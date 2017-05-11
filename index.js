@@ -36,8 +36,6 @@ const usersDB = {
   }
 }
 
-let uniqueVisitors = 0
-
 // Initial app settings
 app.set('view engine', 'ejs')
 app.use(express.static(__dirname + '/public'))
