@@ -5,16 +5,10 @@ const cookieSession = require('cookie-session')
 const methodOverride = require('method-override')
 
 const app = express()
+const PORT  = process.env.PORT || 8080
 
-let PORT  = process.env.PORT || 8080
-
-// let urlDB = {
-//   'user3RandomID': {
-//     'b2xVn2': ['http://www.lighthouselabs.ca', 0, 0],
-//     '9sm5xK': ['http://www.google.com', 0, 0]
-//   }
-// }
-let urlDB = {
+const urlDB = {
+  // sample ulrs
   'user3RandomID': {
     'b2xVn2': {
       url: 'http://www.lighthouselabs.ca',
@@ -33,17 +27,8 @@ let urlDB = {
   }
 }
 
-let usersDB = {
-  'userRandomID': {
-    id: 'userRandomID',
-    email: 'user@example.com',
-    password: 'purple-monkey-dinosaur'
-  },
-  'user2RandomID': {
-    id: 'user2RandomID',
-    email: 'user2@example.com',
-    password: 'dishwasher-funk'
-  },
+const usersDB = {
+  // template user - do not try to log in, password not hashed
   'user3RandomID' : {
     id: 'user3RandomID',
     email: 'user3@example.com',
@@ -134,14 +119,20 @@ app.post('/logout', (req, res) => {
   res.status(301).redirect('http://localhost:8080/urls')
 })
 
-// --> Add new address to DB
+// --> add new address to DB
 app.post('/urls', (req, res) => {
   let user = loggedUser(req)
   if (!user) return res.status(301).redirect('/login')
 
+  // simple small check for http/https prefix
+  let {longURL} = req.body
+  if (!longURL.match(/https?/gi)) {
+    longURL = `https://${longURL}`
+  }
+
   let shortURL = generateRandomString()
   urlDB[user.id][shortURL] =  {
-    url: req.body.longURL,
+    url: longURL,
     totalVisits: 0,
     uniqueVisits: 0,
     visitors: {}
@@ -149,27 +140,33 @@ app.post('/urls', (req, res) => {
   res.status(301).redirect(`http://localhost:8080/urls/${shortURL}`)
 })
 
-// --> Delete address from DB
+// --> delete address from DB
 app.delete('/urls/:id/delete', (req, res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
+
   if (!urlDB[id]) return res.sendStatus(403)
   if (!urlDB[id][req.params.id]) return res.sendStatus(404)
-  console.log(req.params.id, 'deleted')
+
   delete urlDB[id][req.params.id]
   res.status(301).redirect('/urls')
 })
 
-// --> Update address in DB
+// --> update address in DB
 app.put('/urls/:id/update', (req, res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
 
   if (!urlDB[id]) return res.sendStatus(403)
   if (!urlDB[id][req.params.id]) return res.sendStatus(404)
-  console.log(req.params.id, 'updated')
+
+  // check for http/https in the updated url
+  let {longURL} = req.body
+  if (!longURL.match(/^https?\/\//gim)) {
+    longURL = `https://${longURL}`
+  }
   urlDB[id][req.params.id] = {
-    url: req.body.longURL,
+    url: longURL,
     totalVisits: 0,
     uniqueVisits: 0,
     visitors: {}
@@ -177,7 +174,7 @@ app.put('/urls/:id/update', (req, res) => {
   res.status(301).redirect('/urls')
 })
 
-// --> Render page to add new address
+// --> render page to add new address
 app.get('/urls/new', (req, res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
@@ -190,7 +187,7 @@ app.get('/urls/new', (req, res) => {
   res.render('urls_new', templateVars)
 })
 
-// --> Render the update page
+// --> render the update page
 app.get('/urls/:id', (req, res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
@@ -203,7 +200,7 @@ app.get('/urls/:id', (req, res) => {
   res.render('urls_show', templateVars)
 })
 
-// --> Redirection to long URLs
+// --> redirection handler
 app.get('/u/:shortURL', (req, res) => {
   let longURL, user, exist
   let {shortURL} = req.params
@@ -222,14 +219,13 @@ app.get('/u/:shortURL', (req, res) => {
     urlDB[user][shortURL].visitors[`${generateRandomString()}-id`] = new Date()
     req.session[shortURL] = true
   }
-  console.log(urlDB[user][shortURL])
   // Redirect
   res.status(301).redirect(longURL)
 })
 
 app.listen(PORT, () => console.log(`App listening on port ${PORT}`))
 
-// Helper functions
+// helper functions
 function generateRandomString() {
   return Math.random().toString(36).substring(2, 8)
 }
