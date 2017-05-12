@@ -76,7 +76,8 @@ app.get('/register', (req,res) => {
 
 // --> handle user registration
 app.post('/register', (req,res) => {
-  if (getUserID(req, usersDB)) return res.sendStatus(400)
+  if (getUserID(req, usersDB))
+    return res.status(400).send('Sorry, this email is already in use')
 
   let user_id = generateRandomString()
   urlDB[user_id] = {}
@@ -94,10 +95,10 @@ app.post('/register', (req,res) => {
 app.post('/login', (req, res) => {
   let user = getUserID(req, usersDB)
 
-  if (!user) return res.status(403).end('No user found')
+  if (!user) return res.status(403).send('No user found')
 
   if (!bcrypt.compareSync(req.body.password, usersDB[user].password))
-    return res.status(403).end('password does not match')
+    return res.status(403).send('Password is incorrect')
 
   req.session.user_id =  { user_id: usersDB[user].id }
   res.status(301).redirect('/urls')
