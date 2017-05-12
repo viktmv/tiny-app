@@ -94,7 +94,8 @@ app.post('/login', (req, res) => {
 
   if (!user) return res.status(403).end('No user found')
 
-  if (!bcrypt.compareSync(req.body.password, usersDB[user].password)) return res.status(403).end('password does not match')
+  if (!bcrypt.compareSync(req.body.password, usersDB[user].password))
+    return res.status(403).end('password does not match')
 
   req.session.user_id =  { user_id: usersDB[user].id }
   res.status(301).redirect('/urls')
