@@ -48,7 +48,9 @@ app.use(methodOverride('_method'))
 
 // ---> INDEX page render
 app.get('/', (req, res) => {
-  res.end('Welcome!\n')
+  loggedUser(req)
+    ? res.status(301).redirect('/urls')
+    : res.status(301).redirect('/login')
 })
 
 // --> /urls page render
