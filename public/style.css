@@ -62,6 +62,10 @@ nav li {
 nav a {
   text-decoration: none;
 }
+.notice {
+  margin: 20px auto;
+  text-align: center;
+}
 .data-display {
   max-width: 50%;
   min-width: 500px;

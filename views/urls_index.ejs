@@ -8,6 +8,9 @@
   <% include partials/_header %>
   <% include partials/_nav %>
   <main class="data-display">
+    <% if (!user) { %>
+      <p class="notice">Please log in to view your available URLs</p>
+    <% } %>
     <ul>
       <% if (urls) { %>
         <% for (let url of Object.keys(urls)) { %>
@@ -19,6 +22,9 @@
               </form>
             </div>
         <% } %>
+      <% } %>
+      <% if (user && !Object.keys(urls).length) { %>
+        <p class="notice">You have not created any URLs yet</p>
       <% } %>
     </ul>
   </main>
