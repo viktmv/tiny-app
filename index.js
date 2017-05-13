@@ -90,7 +90,7 @@ app.get('/register', (req, res) => {
   let user = loggedUser(req)
   let templateVars = {
     urls: urlDB,
-    user
+    user: user
   }
   res.render('urls_register', templateVars)
 })
@@ -132,7 +132,7 @@ app.get('/login', (req, res) => {
   let user = loggedUser(req)
   let templateVars = {
     urls: urlDB,
-    user
+    user: user
   }
   res.render('urls_login', templateVars)
 })
