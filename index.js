@@ -17,7 +17,7 @@ const urlDB = {
       totalVisits: 0,
       uniqueVisits: 0,
       visitors: {
-        // visitorID : timestamp
+        // visitorID: timestamp
       }
     },
     '9sm5xK': {
@@ -235,7 +235,7 @@ app.listen(PORT, () => console.log(`App listening on port ${PORT}`))
 function generateRandomString () {
   return Math.random().toString(36).substring(2, 8)
 }
-
+  // Get userID from login request if such user is present in DB
 function getUserID (req, DB) {
   let userID = ''
   for (let key of Object.keys(DB)) {
@@ -244,6 +244,8 @@ function getUserID (req, DB) {
   return userID
 }
 
+  // Get userID if user is logged in,
+  // if not - return empty string
 function loggedUser (req) {
   return req.session['user_id']
         ? usersDB[req.session['user_id'].user_id]
