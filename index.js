@@ -1,3 +1,5 @@
+'use strict'
+
 const bcrypt = require('bcrypt')
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -5,7 +7,7 @@ const cookieSession = require('cookie-session')
 const methodOverride = require('method-override')
 
 const app = express()
-const PORT  = process.env.PORT || 8080
+const PORT = process.env.PORT || 8080
 
 const urlDB = {
   // sample ulrs
@@ -29,7 +31,7 @@ const urlDB = {
 
 const usersDB = {
   // template user - do not try to log in, password not hashed
-  'user3RandomID' : {
+  'user3RandomID': {
     id: 'user3RandomID',
     email: 'user3@example.com',
     password: 'funk'
@@ -38,7 +40,7 @@ const usersDB = {
 
 // Initial app settings
 app.set('view engine', 'ejs')
-app.use(express.static(__dirname + '/public'))
+app.use(express.static(`${__dirname}/public`))
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(cookieSession({
   name: 'session',
@@ -54,7 +56,7 @@ app.get('/', (req, res) => {
 })
 
 // --> /urls page render
-app.get('/urls', (req,res) => {
+app.get('/urls', (req, res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
   let templateVars = {
@@ -65,7 +67,7 @@ app.get('/urls', (req,res) => {
 })
 
 // --> register page render
-app.get('/register', (req,res) => {
+app.get('/register', (req, res) => {
   let user = loggedUser(req)
   let templateVars = {
     urls: urlDB,
@@ -75,9 +77,10 @@ app.get('/register', (req,res) => {
 })
 
 // --> handle user registration
-app.post('/register', (req,res) => {
-  if (getUserID(req, usersDB))
+app.post('/register', (req, res) => {
+  if (getUserID(req, usersDB)) {
     return res.status(400).send('Sorry, this email is already in use')
+  }
 
   let user_id = generateRandomString()
   urlDB[user_id] = {}
@@ -97,10 +100,11 @@ app.post('/login', (req, res) => {
 
   if (!user) return res.status(403).send('No user found')
 
-  if (!bcrypt.compareSync(req.body.password, usersDB[user].password))
+  if (!bcrypt.compareSync(req.body.password, usersDB[user].password)) {
     return res.status(403).send('Password is incorrect')
+  }
 
-  req.session.user_id =  { user_id: usersDB[user].id }
+  req.session.user_id = { user_id: usersDB[user].id }
   res.status(301).redirect('/urls')
 })
 
@@ -133,7 +137,7 @@ app.post('/urls', (req, res) => {
   }
 
   let shortURL = generateRandomString()
-  urlDB[user.id][shortURL] =  {
+  urlDB[user.id][shortURL] = {
     url: longURL,
     totalVisits: 0,
     uniqueVisits: 0,
@@ -197,7 +201,7 @@ app.get('/urls/:id', (req, res) => {
   if (!urlDB[id][req.params.id]) return res.sendStatus(403)
   let templateVars = {
     user,
-    url: { long: urlDB[id][req.params.id], short: req.params.id}
+    url: { long: urlDB[id][req.params.id], short: req.params.id }
   }
   res.render('urls_show', templateVars)
 })
@@ -228,20 +232,19 @@ app.get('/u/:shortURL', (req, res) => {
 app.listen(PORT, () => console.log(`App listening on port ${PORT}`))
 
 // helper functions
-function generateRandomString() {
+function generateRandomString () {
   return Math.random().toString(36).substring(2, 8)
 }
 
-function getUserID(req, DB) {
+function getUserID (req, DB) {
   let userID = ''
   for (let key of Object.keys(DB)) {
-    if(DB[key].email == req.body.email)
-      userID = DB[key].id
+    if (DB[key].email === req.body.email) { userID = DB[key].id }
   }
   return userID
 }
 
-function loggedUser(req) {
+function loggedUser (req) {
   return req.session['user_id']
         ? usersDB[req.session['user_id'].user_id]
         : ''

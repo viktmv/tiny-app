@@ -20,6 +20,7 @@
     "method-override": "^2.3.8"
   },
   "devDependencies": {
-    "eslint": "^3.19.0"
+    "eslint": "^3.19.0",
+    "standard": "^10.0.2"
   }
 }
