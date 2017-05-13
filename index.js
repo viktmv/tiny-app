@@ -132,7 +132,7 @@ app.post('/urls', (req, res) => {
 
   // simple small check for http/https prefix
   let {longURL} = req.body
-  if (!longURL.match(/https?/gi)) {
+  if (!longURL.match(/^https?:\/\//gim)) {
     longURL = `https://${longURL}`
   }
 
@@ -150,11 +150,12 @@ app.post('/urls', (req, res) => {
 app.delete('/urls/:id/delete', (req, res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
+  let shortURL = req.params.id
 
   if (!urlDB[id]) return res.sendStatus(403)
-  if (!urlDB[id][req.params.id]) return res.sendStatus(404)
+  if (!urlDB[id][shortURL]) return res.sendStatus(404)
 
-  delete urlDB[id][req.params.id]
+  delete urlDB[id][url]
   res.status(301).redirect('/urls')
 })
 
@@ -162,16 +163,17 @@ app.delete('/urls/:id/delete', (req, res) => {
 app.put('/urls/:id/update', (req, res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
+  let shortURL = req.params.id
 
   if (!urlDB[id]) return res.sendStatus(403)
-  if (!urlDB[id][req.params.id]) return res.sendStatus(404)
+  if (!urlDB[id][shortURL]) return res.sendStatus(404)
 
   // check for http/https in the updated url
   let {longURL} = req.body
-  if (!longURL.match(/^https?\/\//gim)) {
+  if (!longURL.match(/^https?:\/\//gim)) {
     longURL = `https://${longURL}`
   }
-  urlDB[id][req.params.id] = {
+  urlDB[id][shortURL] = {
     url: longURL,
     totalVisits: 0,
     uniqueVisits: 0,
@@ -188,7 +190,7 @@ app.get('/urls/new', (req, res) => {
   if (!user) return res.status(301).redirect('/login')
   let templateVars = {
     urls: urlDB[id],
-    user
+    user: user
   }
   res.render('urls_new', templateVars)
 })
@@ -197,11 +199,13 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   let user = loggedUser(req)
   let id = user ? user.id : ''
+  let shortURL = req.params.id
+
   if (!user) return res.status(301).redirect('/login')
-  if (!urlDB[id][req.params.id]) return res.sendStatus(403)
+  if (!urlDB[id][shortURL]) return res.sendStatus(403)
   let templateVars = {
     user,
-    url: { long: urlDB[id][req.params.id], short: req.params.id }
+    url: { long: urlDB[id][shortURL], short: shortURL }
   }
   res.render('urls_show', templateVars)
 })
@@ -210,6 +214,9 @@ app.get('/urls/:id', (req, res) => {
 app.get('/u/:shortURL', (req, res) => {
   let longURL, user, exist
   let {shortURL} = req.params
+
+  // Check if url exits in DB
+  // if it does - get the long url form DB and increment total visits
   for (let key of Object.keys(urlDB)) {
     if (urlDB[key].hasOwnProperty(shortURL)) {
       exist = true
