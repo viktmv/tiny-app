@@ -155,7 +155,7 @@ app.delete('/urls/:id/delete', (req, res) => {
   if (!urlDB[id]) return res.sendStatus(403)
   if (!urlDB[id][shortURL]) return res.sendStatus(404)
 
-  delete urlDB[id][url]
+  delete urlDB[id][shortURL]
   res.status(301).redirect('/urls')
 })
 
